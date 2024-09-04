@@ -5,13 +5,13 @@ GridInterface::GridInterface(wxPanel* panel) {
 }
 
 void GridInterface::InitializeGrid(wxPanel* panel) {
-    // Create a wxGridSizer with 4 rows and 4 columns
+    // Create a wxGridSizer with 5 rows and 4 columns
     wxGridSizer* gridSizer = new wxGridSizer(5, 4, 10, 10);
 
     // Create cells and link them to wxTextCtrl
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            cells[i][j] = new Cell();
+            cells[i][j] = std::make_shared<Cell>(); //shared by function and gridInterface
             cellInputs[i][j] = new wxTextCtrl(panel, wxID_ANY);
             gridSizer->Add(cellInputs[i][j], 1, wxEXPAND | wxALL);  // Add each control to the grid sizer
             cellInputs[i][j]->Bind(wxEVT_TEXT, &GridInterface::OnCellValueChanged, this);  // Bind event
@@ -19,7 +19,7 @@ void GridInterface::InitializeGrid(wxPanel* panel) {
     }
 
     // Create function objects for all cells
-    std::vector<Cell*> allCells;
+    std::vector<std::shared_ptr<Cell>> allCells;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
             allCells.push_back(cells[i][j]);
@@ -27,10 +27,10 @@ void GridInterface::InitializeGrid(wxPanel* panel) {
     }
 
     // Initialize function objects with all cells
-    sumFunction = new Function(Function::SUM, allCells);
-    meanFunction = new Function(Function::MEAN, allCells);
-    minFunction = new Function(Function::MIN, allCells);
-    maxFunction = new Function(Function::MAX, allCells);
+    sumFunction = std::make_unique<Function>(Function::SUM, allCells);
+    meanFunction = std::make_unique<Function>(Function::MEAN, allCells);
+    minFunction = std::make_unique<Function>(Function::MIN, allCells);
+    maxFunction = std::make_unique<Function>(Function::MAX, allCells);
 
     // Create readonly text controls to display the results
     sumText = new wxTextCtrl(panel, wxID_ANY, std::to_string(sumFunction->getValue()), wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
@@ -53,15 +53,24 @@ void GridInterface::OnCellValueChanged(wxCommandEvent& event) {
         for (int j = 0; j < 4; ++j) {
             wxString valueStr = cellInputs[i][j]->GetValue();
             long value;
+
+            // Check if the valueStr can be converted to a long integer
             if (valueStr.ToLong(&value)) {
-                cells[i][j]->setValue(static_cast<int>(value));
+                // Successfully converted to long, set cell value
+                if (cells[i][j]) {
+                    cells[i][j]->setValue(static_cast<int>(value));
+                }
             }
             else {
-                cells[i][j]->setValue(0);
+                // Conversion failed, set default value
+                if (cells[i][j]) {
+                    cells[i][j]->setValue(0);
+                }
             }
         }
     }
 
+    // Update function results after handling all cells
     UpdateFunctionResults();
 }
 
