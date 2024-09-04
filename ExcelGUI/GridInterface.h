@@ -5,6 +5,7 @@
 #include <vector>
 #include "Cell.h"
 #include "Function.h"
+#include <memory>
 
 class GridInterface {
 public:
@@ -19,11 +20,11 @@ private:
     wxTextCtrl* minText;
     wxTextCtrl* maxText;
 
-    Cell* cells[4][4];
-    Function* sumFunction;
-    Function* meanFunction;
-    Function* minFunction;
-    Function* maxFunction;
+    std::shared_ptr<Cell> cells[4][4];
+    std::unique_ptr<Function> sumFunction;
+    std::unique_ptr<Function> meanFunction;
+    std::unique_ptr<Function> minFunction;
+    std::unique_ptr<Function> maxFunction;
 
     void InitializeGrid(wxPanel* panel);
     void UpdateFunctionResults();

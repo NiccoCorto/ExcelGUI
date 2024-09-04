@@ -1,5 +1,6 @@
 #include <wx/wx.h>
 #include "GridInterface.h"
+#include <memory>
 
 class SpreadsheetApp : public wxApp {
 public:
@@ -11,18 +12,19 @@ public:
     SpreadsheetFrame(const wxString& title);
 
 private:
-    GridInterface* gridInterface;
+    std::unique_ptr<GridInterface> gridInterface;
 };
 
 wxIMPLEMENT_APP(SpreadsheetApp);
 
 bool SpreadsheetApp::OnInit() {
-    SpreadsheetFrame* frame = new SpreadsheetFrame("Spreadsheet");
+    auto* frame = new SpreadsheetFrame("Spreadsheet");
     frame->Show(true);
     return true;
 }
 
-SpreadsheetFrame::SpreadsheetFrame(const wxString& title) : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800, 400)) {
-    wxPanel* panel = new wxPanel(this, wxID_ANY);
-    gridInterface = new GridInterface(panel);
+SpreadsheetFrame::SpreadsheetFrame(const wxString& title)
+    : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxSize(800, 400)) {
+    auto panel = new wxPanel(this, wxID_ANY);  // Create the panel
+    gridInterface = std::make_unique<GridInterface>(panel);  // Initialize the gridInterface with the panel
 }
